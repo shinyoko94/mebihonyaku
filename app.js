@@ -10,7 +10,7 @@ const btnEncode = $("btnEncode");
 const btnDecode = $("btnDecode");
 const inputLabel = $("inputLabel");
 
-let mode = "decode"; // 最初はdecode
+let mode = "decode";
 
 const kanaToMorse = {
   "あ":"--.--","い":".-","う":"..-","え":"-.---","お":".-...",
@@ -67,42 +67,31 @@ function setMode(next){
 
 function kanaNormalize(s){
   let t = (s ?? "").normalize("NFKC");
-
   t = t.replace(/[\u30A1-\u30F6]/g, ch =>
     String.fromCharCode(ch.charCodeAt(0) - 0x60)
   );
-
   t = t.replace(/[ぁぃぅぇぉゃゅょっゎ]/g, ch => smallMap[ch] ?? ch);
-
   return t;
 }
 
 function toBeep(morse){
-
   return morse.replace(/\./g, DOT_HW).replace(/-/g, DASH_HW);
 }
 
 function normalizeSpaces(s){
-
   return (s ?? "").replace(/\u3000/g, " ");
 }
 
 function fromBeepToken(token){
-
   const t = (token ?? "").normalize("NFKC");
-
   return t.replace(/ビー/g, "-").replace(/ビ/g, ".");
 }
-
 
 function guessModeFromText(text){
   const t = normalizeSpaces(text).normalize("NFKC").trim();
   if (!t) return null;
-
- 
-  const signalLike = /^[ビーペ゛゜\/／\s]+$/.test(t);
+  const signalLike = /^[ビー\/／\s]+$/.test(t);
   if (signalLike) return "decode";
-
   return "encode";
 }
 
@@ -120,11 +109,11 @@ function encode(text){
       tokens.push("/");
       continue;
     }
-    if (ch === "\u3099"){ // ゙
+    if (ch === "\u3099"){
       tokens.push(toBeep(kanaToMorse["゛"]));
       continue;
     }
-    if (ch === "\u309A"){ // ゚
+    if (ch === "\u309A"){
       tokens.push(toBeep(kanaToMorse["゜"]));
       continue;
     }
@@ -136,7 +125,6 @@ function encode(text){
     }
     tokens.push(toBeep(morse));
   }
-
 
   const compact = [];
   for (const t of tokens){
@@ -205,7 +193,6 @@ function decode(code){
 function render(){
   const val = input.value ?? "";
   const result = (mode === "encode") ? encode(val) : decode(val);
-
   output.value = result.out;
   errors.textContent = result.hasError ? "⚠️ 変換できない文字が含まれています" : "";
 }
@@ -238,7 +225,6 @@ $("swap").addEventListener("click", () => {
 
 input.addEventListener("input", render);
 
-
 input.addEventListener("paste", () => {
   setTimeout(() => {
     const guess = guessModeFromText(input.value);
@@ -247,7 +233,6 @@ input.addEventListener("paste", () => {
   }, 0);
 });
 
-
 input.addEventListener("drop", () => {
   setTimeout(() => {
     const guess = guessModeFromText(input.value);
@@ -255,6 +240,5 @@ input.addEventListener("drop", () => {
     else render();
   }, 0);
 });
-
 
 setMode("decode");
