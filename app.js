@@ -12,7 +12,6 @@ const inputLabel = $("inputLabel");
 
 let mode = "decode"; // 最初はdecode
 
-// 和文モールス（Wabun）ベース
 const kanaToMorse = {
   "あ":"--.--","い":".-","う":"..-","え":"-.---","お":".-...",
   "か":".-..","き":"-.-..","く":"...-","け":"-.--","こ":"----",
@@ -69,40 +68,38 @@ function setMode(next){
 function kanaNormalize(s){
   let t = (s ?? "").normalize("NFKC");
 
-  // カタカナ→ひらがな
   t = t.replace(/[\u30A1-\u30F6]/g, ch =>
     String.fromCharCode(ch.charCodeAt(0) - 0x60)
   );
 
-  // 小書き→通常
   t = t.replace(/[ぁぃぅぇぉゃゅょっゎ]/g, ch => smallMap[ch] ?? ch);
 
   return t;
 }
 
 function toBeep(morse){
-  // 出力は半角「ﾋﾞ」「ﾋﾞｰ」で統一
+
   return morse.replace(/\./g, DOT_HW).replace(/-/g, DASH_HW);
 }
 
 function normalizeSpaces(s){
-  // 全角スペース(U+3000)を半角に寄せる
+
   return (s ?? "").replace(/\u3000/g, " ");
 }
 
 function fromBeepToken(token){
-  // 入力は半角/全角どっちも来るのでNFKCで寄せる（ﾋﾞ/ﾋﾞｰ → ビ/ビー）
+
   const t = (token ?? "").normalize("NFKC");
-  // 「ビー」を先に
+
   return t.replace(/ビー/g, "-").replace(/ビ/g, ".");
 }
 
-// 貼り付け時の自動判定（信号っぽい/文章っぽい）
+
 function guessModeFromText(text){
   const t = normalizeSpaces(text).normalize("NFKC").trim();
   if (!t) return null;
 
-  // 信号っぽい：ビ/ー とスラッシュと空白だけ
+ 
   const signalLike = /^[ビーペ゛゜\/／\s]+$/.test(t);
   if (signalLike) return "decode";
 
@@ -140,7 +137,7 @@ function encode(text){
     tokens.push(toBeep(morse));
   }
 
-  // 連続/の整理
+
   const compact = [];
   for (const t of tokens){
     if (t === "/" && compact[compact.length - 1] === "/") continue;
@@ -241,7 +238,7 @@ $("swap").addEventListener("click", () => {
 
 input.addEventListener("input", render);
 
-// 貼り付けした瞬間に自動判定してモード切替
+
 input.addEventListener("paste", () => {
   setTimeout(() => {
     const guess = guessModeFromText(input.value);
@@ -250,7 +247,7 @@ input.addEventListener("paste", () => {
   }, 0);
 });
 
-// ドロップでも同じ
+
 input.addEventListener("drop", () => {
   setTimeout(() => {
     const guess = guessModeFromText(input.value);
@@ -259,5 +256,5 @@ input.addEventListener("drop", () => {
   }, 0);
 });
 
-// 初期表示：decode
+
 setMode("decode");
